@@ -1,3 +1,7 @@
 pool: MyAgentPool
+- task: DotNetCoreCLI@2
+  inputs:
+    azureSubscription: 'dharyll.floresVSES(0bcc0ae6-5dd5-48f8-ab83-bd64e6038380)'
+    command: 'build'
 steps:
 - bash: echo hello world
