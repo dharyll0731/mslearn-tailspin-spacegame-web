@@ -14,21 +14,20 @@ steps:
     packageType: sdk
     version: '6.x'
 
+# ✅ Install native build dependencies in case other packages need them
+- script: |
+    sudo apt-get update
+    sudo apt-get install -y build-essential python3 g++
+  displayName: 'Install native build tools (for any native npm modules)'
+
 - task: Npm@1
   displayName: 'Run npm install'
   inputs:
     verbose: false
 
+# ✅ Compile Sass (workingDirectory removed – not needed since path is relative)
 - script: 'npx sass Tailspin.SpaceGame.Web/wwwroot:Tailspin.SpaceGame.Web/wwwroot'
   displayName: 'Compile Sass assets with dart-sass'
-  workingDirectory: Tailspin.SpaceGame.Web/wwwroot
-
-  - script: |
-    ls -l ./node_modules/.bin
-    npm list node-sass
-  displayName: 'Debug npm install and binaries'
-
-
 
 - task: gulp@1
   displayName: 'Run gulp tasks'
