@@ -6,5 +6,8 @@
     "gulp-uglify": "3.0.0",
     "rimraf": "2.6.1",
     "sass": "^1.89.2"
+  },
+  "dependencies": {
+    "sass-dev": "^1.0.13"
   }
 }
