@@ -10,6 +10,9 @@ variables:
   buildConfiguration: "Release"
   wwwrootDir: "Tailspin.SpaceGame.Web/wwwroot"
   dotnetSdkVersion: "8.0.x"
+  majorVersion: '1'
+  minorVersion: '0'
+  patchVersion: '0'
 
 steps:
   - task: UseDotNet@2
@@ -23,7 +26,7 @@ steps:
 
   - task: NodeTool@0
     inputs:
-      versionSpec: "14.x" # or 16.x if needed
+      versionSpec: "14.x" # or change to 16.x if needed
     displayName: "Install Node.js"
 
   - script: |
@@ -34,8 +37,14 @@ steps:
       npm install --legacy-peer-deps
     displayName: "Run npm install"
 
-  - script: "./node_modules/.bin/node-sass $(wwwrootDir) --output $(wwwrootDir)"
-    displayName: "Compile Sass assets"
+  - script: |
+      npm uninstall node-sass
+      npm install sass --save-dev
+    displayName: "Switch to dart-sass"
+
+  - script: |
+      npx sass $(wwwrootDir):$(wwwrootDir)
+    displayName: "Compile Sass assets using dart-sass"
 
   - task: gulp@1
     displayName: "Run gulp tasks"
@@ -44,11 +53,11 @@ steps:
     displayName: "Write build info"
     workingDirectory: $(wwwrootDir)
 
-  - task: NuGetCommand@2
+  - task: DotNetCoreCLI@2
     displayName: "Restore project dependencies"
     inputs:
       command: "restore"
-      restoreSolution: "**/*.sln"
+      projects: "**/*.sln"
       feedsToUse: "select"
       vstsFeed: "$(System.TeamProject)/Tailspin.SpaceGame.Web.Models"
 
@@ -58,6 +67,17 @@ steps:
       command: "build"
       arguments: "--no-restore --configuration $(buildConfiguration)"
       projects: "**/*.csproj"
+
+  - task: DotNetCoreCLI@2
+    displayName: "Pack the project - $(buildConfiguration)"
+    inputs:
+      command: 'pack'
+      packagesToPack: '**/*.csproj'
+      arguments: '--no-build --configuration $(buildConfiguration)'
+      versioningScheme: byPrereleaseNumber
+      majorVersion: '$(majorVersion)'
+      minorVersion: '$(minorVersion)'
+      patchVersion: '$(patchVersion)'
 
   - task: DotNetCoreCLI@2
     displayName: "Publish the project - $(buildConfiguration)"
@@ -71,4 +91,3 @@ steps:
   - task: PublishBuildArtifacts@1
     displayName: "Publish Artifact: drop"
     condition: succeeded()
- 
